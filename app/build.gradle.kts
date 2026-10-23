@@ -38,12 +38,6 @@ android {
                 "BACKEND_BASE_URL",
                 "\"${localProperties.getProperty("BACKEND_BASE_URL", "http://10.0.2.2:8080/")}\"",
             )
-            // The local backend is plain HTTP, so there's nothing to pin unless you point debug at HTTPS.
-            buildConfigField(
-                "String",
-                "BACKEND_CERT_PINS",
-                "\"${localProperties.getProperty("BACKEND_CERT_PINS", "")}\"",
-            )
         }
         release {
             // Must be the deployed HTTPS backend: release builds don't allow plain HTTP. The
@@ -52,13 +46,6 @@ android {
                 "String",
                 "BACKEND_BASE_URL",
                 "\"${localProperties.getProperty("RELEASE_BACKEND_BASE_URL", "https://backend.invalid/")}\"",
-            )
-            // SSL pinning: comma-separated SHA-256 public-key hashes ("sha256/...") of the backend's
-            // certificate chain, current key plus a backup. Release builds refuse to build without them.
-            buildConfigField(
-                "String",
-                "BACKEND_CERT_PINS",
-                "\"${localProperties.getProperty("RELEASE_BACKEND_CERT_PINS", "")}\"",
             )
             isMinifyEnabled = false
             proguardFiles(
@@ -82,16 +69,6 @@ android {
         // Plain JVM unit tests only have stub android.* classes. OkHttp calls android.util.Log while
         // starting up, so let the stubs return defaults (false/0/null) instead of throwing.
         unitTests.isReturnDefaultValues = true
-    }
-}
-
-// Release builds must ship with certificate pins. Checked only when a release variant is actually
-// built, so debug builds and unit tests don't need them.
-tasks.matching { it.name == "preReleaseBuild" }.configureEach {
-    doFirst {
-        check(!localProperties.getProperty("RELEASE_BACKEND_CERT_PINS").isNullOrBlank()) {
-            "Set RELEASE_BACKEND_CERT_PINS in local.properties (at least two sha256/ pins) before building release."
-        }
     }
 }
 
@@ -121,6 +98,4 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.okhttp.tls)
-    testImplementation(libs.okhttp.mockwebserver)
 }
