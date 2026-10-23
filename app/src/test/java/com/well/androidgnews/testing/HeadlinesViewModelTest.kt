@@ -43,7 +43,7 @@ class HeadlinesViewModelTest {
     }
 
     @Test
-    fun `backend failure shows error`() {
+    fun `server failure shows error`() {
         repository.headlines = { throw httpException(502) }
 
         val viewModel = HeadlinesViewModel(repository)

@@ -18,17 +18,17 @@ class RemoteNewsRepositoryTest {
     private val repository = RemoteNewsRepository(api)
 
     @Test
-    fun `top headlines asks the backend for the category`() = runTest {
+    fun `top headlines asks for taiwan chinese news in the category`() = runTest {
         repository.topHeadlines(Category.TECHNOLOGY)
 
-        assertEquals(listOf(Request("headlines", "technology")), api.requests)
+        assertEquals(listOf(Request("top-headlines", "technology", "zh", "tw", 10)), api.requests)
     }
 
     @Test
-    fun `search asks the backend for the query`() = runTest {
+    fun `search asks for taiwan chinese news matching the query`() = runTest {
         repository.search("台積電")
 
-        assertEquals(listOf(Request("search", "台積電")), api.requests)
+        assertEquals(listOf(Request("search", "台積電", "zh", "tw", 10)), api.requests)
     }
 
     @Test
@@ -87,20 +87,26 @@ class RemoteNewsRepositoryTest {
     private fun response(vararg articles: ArticleDto) =
         ArticlesResponse(totalArticles = articles.size, articles = articles.toList())
 
-    private data class Request(val endpoint: String, val term: String)
+    private data class Request(
+        val endpoint: String,
+        val term: String,
+        val lang: String,
+        val country: String,
+        val max: Int,
+    )
 
     /** Stands in for the Retrofit-generated service: records the call and returns [response]. */
     private class FakeNewsApiService : INewsApiService {
         var response = ArticlesResponse()
         val requests = mutableListOf<Request>()
 
-        override suspend fun headlines(category: String): ArticlesResponse {
-            requests += Request("headlines", category)
+        override suspend fun topHeadlines(category: String, lang: String, country: String, max: Int): ArticlesResponse {
+            requests += Request("top-headlines", category, lang, country, max)
             return response
         }
 
-        override suspend fun search(query: String): ArticlesResponse {
-            requests += Request("search", query)
+        override suspend fun search(query: String, lang: String, country: String, max: Int): ArticlesResponse {
+            requests += Request("search", query, lang, country, max)
             return response
         }
     }

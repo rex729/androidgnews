@@ -4,15 +4,26 @@ import com.well.androidgnews.data.remote.dto.ArticlesResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-/**
- * The app's own backend (../AndroidGNewsBackend). It holds the GNews API key, fixes the
- * language/country filters, and caches responses, so the app only says what it wants.
- */
+/** GNews REST API (https://gnews.io/docs/v4). The API key is appended by [ApiKeyInterceptor]. */
 interface INewsApiService {
 
-    @GET("api/headlines")
-    suspend fun headlines(@Query("category") category: String): ArticlesResponse
+    @GET("top-headlines")
+    suspend fun topHeadlines(
+        @Query("category") category: String,
+        @Query("lang") lang: String,
+        @Query("country") country: String,
+        @Query("max") max: Int,
+    ): ArticlesResponse
 
-    @GET("api/search")
-    suspend fun search(@Query("q") query: String): ArticlesResponse
+    @GET("search")
+    suspend fun search(
+        @Query("q") query: String,
+        @Query("lang") lang: String,
+        @Query("country") country: String,
+        @Query("max") max: Int,
+    ): ArticlesResponse
+
+    companion object {
+        const val BASE_URL = "https://gnews.io/api/v4/"
+    }
 }

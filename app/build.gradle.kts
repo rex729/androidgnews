@@ -21,32 +21,18 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
+
+        // This branch calls GNews directly, so the key ships inside the APK (anyone can extract it,
+        // and every install shares its daily quota). Kept out of git in local.properties.
+        buildConfigField(
+            "String",
+            "GNEWS_API_KEY",
+            "\"${localProperties.getProperty("GNEWS_API_KEY", "")}\"",
+        )
     }
 
-    installation {
-        // Grant runtime permissions on install (debug's ACCESS_LOCAL_NETWORK) so there's no prompt.
-        installOptions += "-g"
-    }
-
-    // The app's own backend (../AndroidGNewsBackend). Both can be overridden in local.properties.
     buildTypes {
-        debug {
-            // 10.0.2.2 is the emulator's alias for this PC; reaching it needs ACCESS_LOCAL_NETWORK,
-            // which only the debug manifest requests.
-            buildConfigField(
-                "String",
-                "BACKEND_BASE_URL",
-                "\"${localProperties.getProperty("BACKEND_BASE_URL", "http://10.0.2.2:8080/")}\"",
-            )
-        }
         release {
-            // Must be the deployed HTTPS backend: release builds don't allow plain HTTP. The
-            // placeholder fails fast (the .invalid domain never resolves) until a real URL is set.
-            buildConfigField(
-                "String",
-                "BACKEND_BASE_URL",
-                "\"${localProperties.getProperty("RELEASE_BACKEND_BASE_URL", "https://backend.invalid/")}\"",
-            )
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -69,6 +55,15 @@ android {
         // Plain JVM unit tests only have stub android.* classes. OkHttp calls android.util.Log while
         // starting up, so let the stubs return defaults (false/0/null) instead of throwing.
         unitTests.isReturnDefaultValues = true
+    }
+}
+
+// A release without a key would install fine and then fail every request; refuse to build it.
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    doFirst {
+        check(!localProperties.getProperty("GNEWS_API_KEY").isNullOrBlank()) {
+            "Set GNEWS_API_KEY in local.properties before building release."
+        }
     }
 }
 

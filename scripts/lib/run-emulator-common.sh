@@ -70,7 +70,11 @@ backend_url="$(local_prop BACKEND_BASE_URL)"
 if [ -z "$backend_url" ]; then
   backend_url="$(sed -nE 's/.*getProperty\("BACKEND_BASE_URL", "([^"]+)"\).*/\1/p' "$gradle_file" | head -n 1)"
 fi
-[ -n "$backend_url" ] || die "couldn't work out the debug backend URL"
+if [ -z "$backend_url" ]; then
+  # This build calls a public API directly (e.g. the store branch); there's no local backend.
+  manage_backend=false
+  backend_url="its API"
+fi
 backend_host="$(printf '%s' "$backend_url" | sed -E 's#^[a-z]+://([^/:]+).*#\1#')"
 backend_port="$(printf '%s' "$backend_url" | sed -nE 's#^[a-z]+://[^/:]+:([0-9]+).*#\1#p')"
 if [ -z "$backend_port" ]; then
@@ -138,11 +142,11 @@ step "Launching $launcher"
 
 if $follow_logs; then
   step "App log (Ctrl+C to stop)"
-  exec "$adb" logcat -s OkHttp:I AndroidRuntime:E
+  exec "$adb" logcat -s OkHttp:D AndroidRuntime:E
 fi
 
 sleep 5
-result="$("$adb" logcat -d -s OkHttp:I | grep -- '<--' | tail -n 1 || true)"
+result="$("$adb" logcat -d -s OkHttp:D | grep -- '<--' | tail -n 1 || true)"
 if [[ "$result" == *"<-- 200"* ]]; then
   step "Done: the app loaded news from $backend_url"
 elif [ -n "$result" ]; then
