@@ -2,6 +2,8 @@ package com.well.androidgnews.ui.common
 
 import com.well.androidgnews.data.model.Article
 import java.io.IOException
+import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLPeerUnverifiedException
 import kotlin.coroutines.cancellation.CancellationException
 import retrofit2.HttpException
 
@@ -13,6 +15,8 @@ sealed interface IArticlesUiState {
     data class Success(val articles: List<Article>) : IArticlesUiState
     data class Error(val message: String) : IArticlesUiState
 }
+
+private const val UNVERIFIED_SERVER_MESSAGE = "無法驗證伺服器的安全性，已中斷連線"
 
 /** Runs [fetch] and maps its result or failure to a UI state, letting cancellation propagate. */
 suspend fun loadArticles(fetch: suspend () -> List<Article>): IArticlesUiState =
@@ -30,6 +34,11 @@ suspend fun loadArticles(fetch: suspend () -> List<Article>): IArticlesUiState =
                 else -> "讀取失敗 (HTTP ${e.code()})"
             },
         )
+    } catch (e: SSLPeerUnverifiedException) {
+        // Certificate pinning or hostname check failed: possibly a man-in-the-middle, not a bad network.
+        IArticlesUiState.Error(UNVERIFIED_SERVER_MESSAGE)
+    } catch (e: SSLHandshakeException) {
+        IArticlesUiState.Error(UNVERIFIED_SERVER_MESSAGE)
     } catch (e: IOException) {
         IArticlesUiState.Error("網路連線失敗，請檢查網路後再試")
     } catch (e: Exception) {

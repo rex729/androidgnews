@@ -5,6 +5,8 @@ import com.well.androidgnews.data.httpException
 import com.well.androidgnews.ui.common.IArticlesUiState
 import com.well.androidgnews.ui.common.loadArticles
 import java.io.IOException
+import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLPeerUnverifiedException
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -38,6 +40,12 @@ class LoadArticlesTest {
     @Test
     fun `io failure maps to network message`() = runTest {
         assertErrorContains("網路", IOException())
+    }
+
+    @Test
+    fun `certificate pinning failure is reported as an unverified server, not a network problem`() = runTest {
+        assertErrorContains("無法驗證伺服器", SSLPeerUnverifiedException("Certificate pinning failure!"))
+        assertErrorContains("無法驗證伺服器", SSLHandshakeException("untrusted certificate"))
     }
 
     @Test
