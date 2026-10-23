@@ -21,6 +21,20 @@ before loading anything. Tap **Allow**; if you tapped Don't allow, every request
 network error until you grant it in Settings or with
 `adb shell pm grant com.well.androidgnews android.permission.ACCESS_LOCAL_NETWORK`.
 
+## One-command run
+
+Starts the local backend and the emulator if needed, then builds, installs and launches the app:
+
+```bash
+scripts/run-emulator-windows.sh   # Windows, from Git Bash
+scripts/run-emulator-mac.sh       # macOS
+# options: --logs (follow the app's network log), --no-backend
+```
+
+Paths, port and app ID are read from `local.properties` / `app/build.gradle.kts`; override with
+`ANDROID_HOME`, `JAVA_HOME`, `AVD`, `BACKEND_DIR`, `EMULATOR_ARGS`, `BOOT_TIMEOUT`. The emulator cold
+boots by default, since a quick-boot snapshot left by a killed emulator can hang at "offline".
+
 ## local.properties
 
 Not committed; each machine keeps its own.

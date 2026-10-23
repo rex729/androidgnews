@@ -10,3 +10,4 @@
 .externalNativeBuild/
 .cxx/
 build_log.txt
+emulator.log
