@@ -32,6 +32,8 @@ import com.well.androidgnews.ui.components.ArticlesContent
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel,
+    favoriteUrls: Set<String>,
+    onToggleFavorite: (Article) -> Unit,
     onBack: () -> Unit,
     onArticleClick: (Article) -> Unit,
 ) {
@@ -79,6 +81,8 @@ fun SearchScreen(
             state = state,
             onRetry = viewModel::search,
             onArticleClick = onArticleClick,
+            favoriteUrls = favoriteUrls,
+            onToggleFavorite = onToggleFavorite,
             idleMessage = "輸入關鍵字後按搜尋",
             modifier = Modifier.padding(innerPadding),
         )

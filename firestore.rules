@@ -1,0 +1,20 @@
+rules_version = '2';
+
+// Paste into Firebase Console → Firestore Database → Rules, then Publish.
+// Each signed-in user can read and write only their own favorites; nobody else can touch them.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/favorites/{favoriteId} {
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+
+      // Writes must look like what the app stores (FavoriteDocument.kt), with bounded sizes,
+      // so a modified client can't park arbitrary data here.
+      allow create, update: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(
+             ['title', 'description', 'url', 'imageUrl', 'publishedAt', 'sourceName', 'savedAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() <= 500
+        && request.resource.data.url is string && request.resource.data.url.size() <= 2048
+        && request.resource.data.savedAt == request.time;
+    }
+  }
+}

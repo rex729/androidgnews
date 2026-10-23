@@ -22,12 +22,14 @@ import androidx.compose.ui.unit.dp
 import com.well.androidgnews.data.model.Article
 import com.well.androidgnews.ui.common.IArticlesUiState
 
-/** Shared list / loading / error / empty rendering for the headlines and search screens. */
+/** Shared list / loading / error / empty rendering for the headlines, search and favorites screens. */
 @Composable
 fun ArticlesContent(
     state: IArticlesUiState,
     onRetry: () -> Unit,
     onArticleClick: (Article) -> Unit,
+    favoriteUrls: Set<String>,
+    onToggleFavorite: (Article) -> Unit,
     modifier: Modifier = Modifier,
     idleMessage: String = "",
 ) {
@@ -46,7 +48,12 @@ fun ArticlesContent(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(state.articles, key = { it.url }) { article ->
-                ArticleCard(article = article, onClick = { onArticleClick(article) })
+                ArticleCard(
+                    article = article,
+                    onClick = { onArticleClick(article) },
+                    isFavorite = article.url in favoriteUrls,
+                    onToggleFavorite = { onToggleFavorite(article) },
+                )
             }
         }
     }

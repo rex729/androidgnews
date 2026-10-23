@@ -4,7 +4,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,9 +35,15 @@ import com.well.androidgnews.ui.components.ArticlesContent
 @Composable
 fun HeadlinesScreen(
     viewModel: HeadlinesViewModel,
+    favoriteUrls: Set<String>,
+    onToggleFavorite: (Article) -> Unit,
+    accountLabel: String,
     onSearchClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
+    onSignOut: () -> Unit,
     onArticleClick: (Article) -> Unit,
 ) {
+    var accountMenuOpen by remember { mutableStateOf(false) }
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -41,6 +55,24 @@ fun HeadlinesScreen(
                 actions = {
                     IconButton(onClick = onSearchClick) {
                         Icon(Icons.Default.Search, contentDescription = "搜尋")
+                    }
+                    IconButton(onClick = onFavoritesClick) {
+                        Icon(Icons.Default.Favorite, contentDescription = "我的收藏")
+                    }
+                    Box {
+                        IconButton(onClick = { accountMenuOpen = true }) {
+                            Icon(Icons.Default.AccountCircle, contentDescription = "帳號")
+                        }
+                        DropdownMenu(expanded = accountMenuOpen, onDismissRequest = { accountMenuOpen = false }) {
+                            DropdownMenuItem(text = { Text(accountLabel) }, onClick = {}, enabled = false)
+                            DropdownMenuItem(
+                                text = { Text("登出") },
+                                onClick = {
+                                    accountMenuOpen = false
+                                    onSignOut()
+                                },
+                            )
+                        }
                     }
                 },
             )
@@ -68,6 +100,8 @@ fun HeadlinesScreen(
                     state = state,
                     onRetry = viewModel::retry,
                     onArticleClick = onArticleClick,
+                    favoriteUrls = favoriteUrls,
+                    onToggleFavorite = onToggleFavorite,
                 )
             }
         }

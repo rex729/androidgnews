@@ -11,11 +11,21 @@ device. Trade-offs of this branch:
 - Every install shares the key's daily quota (100 requests/day on the free GNews plan).
 - No SSL pinning: gnews.io is a third-party server whose certificates we don't control.
 
+Reading news requires signing in with Google; signed-in users can save articles to favorites,
+stored in Cloud Firestore under their account so they follow them across devices.
+
 ## Setup
 
 1. Put your GNews key in `local.properties`: `GNEWS_API_KEY=...` (release builds refuse to build
    without it).
-2. Open this folder in Android Studio and run, or:
+2. Firebase (sign-in and favorites):
+   1. In your Firebase project, add an Android app with package `com.well.androidgnews` and the
+      SHA-1 of every key that signs it (`.\gradlew.bat :app:signingReport` prints the debug one;
+      for Play, also add the upload key's and Play App Signing's).
+   2. Authentication → Sign-in method → enable **Google**.
+   3. Firestore Database → create it, then paste `firestore.rules` into its Rules tab and publish.
+   4. Download `google-services.json` into `app/` (git-ignored; the build fails without it).
+3. Open this folder in Android Studio and run, or:
 
    ```powershell
    $env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
@@ -50,5 +60,6 @@ Not committed; each machine keeps its own.
 .\gradlew.bat testDebugUnitTest
 ```
 
-JVM unit tests only (`app/src/test`): ViewModels, repository mapping, the request contract with
-GNews, the API key interceptor, error messages, relative time.
+JVM unit tests only (`app/src/test`): ViewModels (news, login, favorites), repository mapping, the
+request contract with GNews, the API key interceptor, the Firestore favorite document (including a
+check that it matches the allow-list in `firestore.rules`), error messages, relative time.
