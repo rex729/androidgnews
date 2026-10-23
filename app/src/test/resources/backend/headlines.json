@@ -1,0 +1,27 @@
+{
+  "totalArticles": 2,
+  "articles": [
+    {
+      "id": "a1",
+      "title": "台積電宣布擴大先進封裝產能",
+      "description": "摘要一",
+      "content": "內文一",
+      "url": "https://example.com/news/1",
+      "image": "https://example.com/img/1.jpg",
+      "publishedAt": "2026-10-23T01:02:03Z",
+      "lang": "zh",
+      "source": { "id": "s1", "name": "中央社", "url": "https://www.cna.com.tw", "country": "tw" }
+    },
+    {
+      "id": "a2",
+      "title": "沒有圖片也沒有來源的新聞",
+      "description": null,
+      "content": "內文二",
+      "url": "https://example.com/news/2",
+      "image": null,
+      "publishedAt": "2026-10-22T23:00:00Z",
+      "lang": "zh",
+      "source": null
+    }
+  ]
+}

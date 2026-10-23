@@ -5,7 +5,7 @@ import com.well.androidgnews.data.model.Category
 
 /**
  * Where the UI gets news from. ViewModels depend on this interface only, so tests can hand them
- * a fake instead of the real network-backed [GNewsRepository].
+ * a fake instead of the real network-backed [RemoteNewsRepository].
  */
 interface INewsRepository {
 

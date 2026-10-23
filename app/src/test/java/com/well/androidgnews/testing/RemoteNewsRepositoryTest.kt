@@ -1,8 +1,8 @@
 package com.well.androidgnews.testing
 
-import com.well.androidgnews.data.GNewsRepository
+import com.well.androidgnews.data.RemoteNewsRepository
 import com.well.androidgnews.data.model.Category
-import com.well.androidgnews.data.remote.IGNewsApiService
+import com.well.androidgnews.data.remote.INewsApiService
 import com.well.androidgnews.data.remote.dto.ArticleDto
 import com.well.androidgnews.data.remote.dto.ArticlesResponse
 import com.well.androidgnews.data.remote.dto.SourceDto
@@ -12,23 +12,23 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-class GNewsRepositoryTest {
+class RemoteNewsRepositoryTest {
 
-    private val api = FakeGNewsApiService()
-    private val repository = GNewsRepository(api)
+    private val api = FakeNewsApiService()
+    private val repository = RemoteNewsRepository(api)
 
     @Test
-    fun `top headlines asks for taiwan chinese news in the category`() = runTest {
+    fun `top headlines asks the backend for the category`() = runTest {
         repository.topHeadlines(Category.TECHNOLOGY)
 
-        assertEquals(listOf(Request("top-headlines", "technology", "zh", "tw", 10)), api.requests)
+        assertEquals(listOf(Request("headlines", "technology")), api.requests)
     }
 
     @Test
-    fun `search asks for taiwan chinese news matching the query`() = runTest {
+    fun `search asks the backend for the query`() = runTest {
         repository.search("台積電")
 
-        assertEquals(listOf(Request("search", "台積電", "zh", "tw", 10)), api.requests)
+        assertEquals(listOf(Request("search", "台積電")), api.requests)
     }
 
     @Test
@@ -87,26 +87,20 @@ class GNewsRepositoryTest {
     private fun response(vararg articles: ArticleDto) =
         ArticlesResponse(totalArticles = articles.size, articles = articles.toList())
 
-    private data class Request(
-        val endpoint: String,
-        val term: String,
-        val lang: String,
-        val country: String,
-        val max: Int,
-    )
+    private data class Request(val endpoint: String, val term: String)
 
     /** Stands in for the Retrofit-generated service: records the call and returns [response]. */
-    private class FakeGNewsApiService : IGNewsApiService {
+    private class FakeNewsApiService : INewsApiService {
         var response = ArticlesResponse()
         val requests = mutableListOf<Request>()
 
-        override suspend fun topHeadlines(category: String, lang: String, country: String, max: Int): ArticlesResponse {
-            requests += Request("top-headlines", category, lang, country, max)
+        override suspend fun headlines(category: String): ArticlesResponse {
+            requests += Request("headlines", category)
             return response
         }
 
-        override suspend fun search(query: String, lang: String, country: String, max: Int): ArticlesResponse {
-            requests += Request("search", query, lang, country, max)
+        override suspend fun search(query: String): ArticlesResponse {
+            requests += Request("search", query)
             return response
         }
     }

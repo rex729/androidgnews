@@ -6,6 +6,6 @@ import com.well.androidgnews.di.AppContainer
 class NewsApplication : Application() {
 
     val container: AppContainer by lazy {
-        AppContainer(BuildConfig.GNEWS_API_KEY)
+        AppContainer(BuildConfig.BACKEND_BASE_URL)
     }
 }

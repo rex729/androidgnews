@@ -24,8 +24,7 @@ suspend fun loadArticles(fetch: suspend () -> List<Article>): IArticlesUiState =
     } catch (e: HttpException) {
         IArticlesUiState.Error(
             when (e.code()) {
-                400 -> "請求格式錯誤"
-                401, 403 -> "API Key 無效，請檢查 local.properties 的 GNEWS_API_KEY"
+                400, 422 -> "請求格式錯誤"
                 429 -> "已超過今日請求次數上限，請明天再試"
                 in 500..599 -> "新聞伺服器暫時無法使用"
                 else -> "讀取失敗 (HTTP ${e.code()})"

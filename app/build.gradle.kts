@@ -22,15 +22,33 @@ android {
         versionCode = 1
         versionName = "0.1.0"
 
-        buildConfigField(
-            "String",
-            "GNEWS_API_KEY",
-            "\"${localProperties.getProperty("GNEWS_API_KEY", "")}\"",
-        )
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    installation {
+        // Grant runtime permissions on install (debug's ACCESS_LOCAL_NETWORK) so there's no prompt.
+        installOptions += "-g"
+    }
+
+    // The app's own backend (../AndroidGNewsBackend). Both can be overridden in local.properties.
     buildTypes {
+        debug {
+            // 10.0.2.2 is the emulator's alias for this PC; reaching it needs ACCESS_LOCAL_NETWORK,
+            // which only the debug manifest requests.
+            buildConfigField(
+                "String",
+                "BACKEND_BASE_URL",
+                "\"${localProperties.getProperty("BACKEND_BASE_URL", "http://10.0.2.2:8080/")}\"",
+            )
+        }
         release {
+            // Must be the deployed HTTPS backend: release builds don't allow plain HTTP. The
+            // placeholder fails fast (the .invalid domain never resolves) until a real URL is set.
+            buildConfigField(
+                "String",
+                "BACKEND_BASE_URL",
+                "\"${localProperties.getProperty("RELEASE_BACKEND_BASE_URL", "https://backend.invalid/")}\"",
+            )
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -82,4 +100,11 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

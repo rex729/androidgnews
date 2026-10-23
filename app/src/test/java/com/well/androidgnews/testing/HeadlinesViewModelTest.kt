@@ -43,13 +43,13 @@ class HeadlinesViewModelTest {
     }
 
     @Test
-    fun `invalid api key shows error`() {
-        repository.headlines = { throw httpException(401) }
+    fun `backend failure shows error`() {
+        repository.headlines = { throw httpException(502) }
 
         val viewModel = HeadlinesViewModel(repository)
 
         val state = viewModel.state.value
-        assertTrue(state is IArticlesUiState.Error && "API Key" in state.message)
+        assertTrue(state is IArticlesUiState.Error && "伺服器" in state.message)
     }
 
     @Test

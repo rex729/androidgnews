@@ -27,10 +27,11 @@ class LoadArticlesTest {
 
     @Test
     fun `http errors map to readable messages`() = runTest {
-        assertErrorContains("API Key", httpException(401))
-        assertErrorContains("API Key", httpException(403))
+        assertErrorContains("請求格式", httpException(400))
+        assertErrorContains("請求格式", httpException(422))
         assertErrorContains("請求次數", httpException(429))
-        assertErrorContains("伺服器", httpException(503))
+        assertErrorContains("伺服器", httpException(502))
+        assertErrorContains("伺服器", httpException(504))
         assertErrorContains("HTTP 404", httpException(404))
     }
 
