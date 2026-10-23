@@ -15,8 +15,10 @@ talks to GNews directly: it calls its own backend,
    ```
 
 Debug builds call `http://10.0.2.2:8080/` (this PC as seen from the emulator). Reaching it on
-Android 17 needs the `ACCESS_LOCAL_NETWORK` permission, which `installDebug` grants automatically.
-If the app spins forever after installing some other way:
+Android 17 needs the `ACCESS_LOCAL_NETWORK` permission: `installDebug` grants it automatically, and
+otherwise (e.g. Android Studio's Run, which can uninstall first) the debug app asks for it on launch
+before loading anything. Tap **Allow**; if you tapped Don't allow, every request times out with a
+network error until you grant it in Settings or with
 `adb shell pm grant com.well.androidgnews android.permission.ACCESS_LOCAL_NETWORK`.
 
 ## local.properties
