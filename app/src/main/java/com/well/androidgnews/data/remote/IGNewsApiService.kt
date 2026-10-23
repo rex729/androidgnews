@@ -5,7 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 /** https://gnews.io/docs/v4 — the API key is appended by [ApiKeyInterceptor]. */
-interface GNewsApiService {
+interface IGNewsApiService {
 
     @GET("top-headlines")
     suspend fun topHeadlines(

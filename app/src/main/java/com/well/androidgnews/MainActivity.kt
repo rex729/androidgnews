@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val viewModelFactory = (application as NewsApplication).appComponent.viewModelFactory()
+        val repository = (application as NewsApplication).container.newsRepository
 
         setContent {
             NewsTheme {
@@ -31,14 +31,14 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = Routes.HEADLINES) {
                     composable(Routes.HEADLINES) {
                         HeadlinesScreen(
-                            viewModel = viewModel<HeadlinesViewModel>(factory = viewModelFactory),
+                            viewModel = viewModel { HeadlinesViewModel(repository) },
                             onSearchClick = { navController.navigate(Routes.SEARCH) },
                             onArticleClick = { context.openUrl(it.url) },
                         )
                     }
                     composable(Routes.SEARCH) {
                         SearchScreen(
-                            viewModel = viewModel<SearchViewModel>(factory = viewModelFactory),
+                            viewModel = viewModel { SearchViewModel(repository) },
                             onBack = { navController.popBackStack() },
                             onArticleClick = { context.openUrl(it.url) },
                         )

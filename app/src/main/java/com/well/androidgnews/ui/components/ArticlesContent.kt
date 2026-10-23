@@ -20,27 +20,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.well.androidgnews.data.model.Article
-import com.well.androidgnews.ui.common.ArticlesUiState
+import com.well.androidgnews.ui.common.IArticlesUiState
 
 /** Shared list / loading / error / empty rendering for the headlines and search screens. */
 @Composable
 fun ArticlesContent(
-    state: ArticlesUiState,
+    state: IArticlesUiState,
     onRetry: () -> Unit,
     onArticleClick: (Article) -> Unit,
     modifier: Modifier = Modifier,
     idleMessage: String = "",
 ) {
     when (state) {
-        ArticlesUiState.Idle -> CenteredMessage(idleMessage, modifier)
-        ArticlesUiState.Loading -> Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        IArticlesUiState.Idle -> CenteredMessage(idleMessage, modifier)
+        IArticlesUiState.Loading -> Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
-        ArticlesUiState.Empty -> CenteredMessage("沒有找到相關新聞", modifier)
-        is ArticlesUiState.Error -> CenteredMessage(state.message, modifier) {
+        IArticlesUiState.Empty -> CenteredMessage("沒有找到相關新聞", modifier)
+        is IArticlesUiState.Error -> CenteredMessage(state.message, modifier) {
             Button(onClick = onRetry) { Text("重試") }
         }
-        is ArticlesUiState.Success -> LazyColumn(
+        is IArticlesUiState.Success -> LazyColumn(
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),

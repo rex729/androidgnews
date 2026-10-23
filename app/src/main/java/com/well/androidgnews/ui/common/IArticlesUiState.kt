@@ -5,24 +5,24 @@ import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
 import retrofit2.HttpException
 
-sealed interface ArticlesUiState {
+sealed interface IArticlesUiState {
     /** Nothing requested yet (search screen before the first query). */
-    data object Idle : ArticlesUiState
-    data object Loading : ArticlesUiState
-    data object Empty : ArticlesUiState
-    data class Success(val articles: List<Article>) : ArticlesUiState
-    data class Error(val message: String) : ArticlesUiState
+    data object Idle : IArticlesUiState
+    data object Loading : IArticlesUiState
+    data object Empty : IArticlesUiState
+    data class Success(val articles: List<Article>) : IArticlesUiState
+    data class Error(val message: String) : IArticlesUiState
 }
 
 /** Runs [fetch] and maps its result or failure to a UI state, letting cancellation propagate. */
-suspend fun loadArticles(fetch: suspend () -> List<Article>): ArticlesUiState =
+suspend fun loadArticles(fetch: suspend () -> List<Article>): IArticlesUiState =
     try {
         val articles = fetch()
-        if (articles.isEmpty()) ArticlesUiState.Empty else ArticlesUiState.Success(articles)
+        if (articles.isEmpty()) IArticlesUiState.Empty else IArticlesUiState.Success(articles)
     } catch (e: CancellationException) {
         throw e
     } catch (e: HttpException) {
-        ArticlesUiState.Error(
+        IArticlesUiState.Error(
             when (e.code()) {
                 400 -> "請求格式錯誤"
                 401, 403 -> "API Key 無效，請檢查 local.properties 的 GNEWS_API_KEY"
@@ -32,7 +32,7 @@ suspend fun loadArticles(fetch: suspend () -> List<Article>): ArticlesUiState =
             },
         )
     } catch (e: IOException) {
-        ArticlesUiState.Error("網路連線失敗，請檢查網路後再試")
+        IArticlesUiState.Error("網路連線失敗，請檢查網路後再試")
     } catch (e: Exception) {
-        ArticlesUiState.Error("發生未預期的錯誤：${e.message}")
+        IArticlesUiState.Error("發生未預期的錯誤：${e.message}")
     }
