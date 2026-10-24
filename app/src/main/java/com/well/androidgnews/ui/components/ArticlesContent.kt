@@ -13,14 +13,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.well.androidgnews.data.model.Article
 import com.well.androidgnews.ui.common.IArticlesUiState
+import com.well.androidgnews.ui.theme.NewsTheme
 
 /** Shared list / loading / error / empty rendering for the headlines, search and favorites screens. */
 @Composable
@@ -82,4 +86,50 @@ private fun CenteredMessage(
         )
         action()
     }
+}
+
+@Composable
+private fun ArticlesContentPreview(state: IArticlesUiState) {
+    NewsTheme {
+        Surface {
+            ArticlesContent(
+                state = state,
+                onRetry = {},
+                onArticleClick = {},
+                favoriteUrls = setOf(previewArticles[0].url),
+                onToggleFavorite = {},
+                idleMessage = "輸入關鍵字後按搜尋",
+            )
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ArticlesSuccessPreview() {
+    ArticlesContentPreview(IArticlesUiState.Success(previewArticles))
+}
+
+@Preview
+@Composable
+private fun ArticlesIdlePreview() {
+    ArticlesContentPreview(IArticlesUiState.Idle)
+}
+
+@Preview
+@Composable
+private fun ArticlesLoadingPreview() {
+    ArticlesContentPreview(IArticlesUiState.Loading)
+}
+
+@Preview
+@Composable
+private fun ArticlesEmptyPreview() {
+    ArticlesContentPreview(IArticlesUiState.Empty)
+}
+
+@Preview
+@Composable
+private fun ArticlesErrorPreview() {
+    ArticlesContentPreview(IArticlesUiState.Error("網路連線失敗，請檢查網路後再試"))
 }

@@ -24,11 +24,15 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.well.androidgnews.data.model.Article
+import com.well.androidgnews.ui.common.IArticlesUiState
 import com.well.androidgnews.ui.components.ArticlesContent
+import com.well.androidgnews.ui.components.previewArticles
+import com.well.androidgnews.ui.theme.NewsTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel,
@@ -39,6 +43,32 @@ fun SearchScreen(
 ) {
     val query by viewModel.query.collectAsStateWithLifecycle()
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    SearchContent(
+        query = query,
+        state = state,
+        onQueryChange = viewModel::onQueryChange,
+        onSearch = viewModel::search,
+        favoriteUrls = favoriteUrls,
+        onToggleFavorite = onToggleFavorite,
+        onBack = onBack,
+        onArticleClick = onArticleClick,
+    )
+}
+
+/** The search screen drawn from state alone, so previews can show it without a ViewModel. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchContent(
+    query: String,
+    state: IArticlesUiState,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    favoriteUrls: Set<String>,
+    onToggleFavorite: (Article) -> Unit,
+    onBack: () -> Unit,
+    onArticleClick: (Article) -> Unit,
+) {
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
 
@@ -55,13 +85,13 @@ fun SearchScreen(
                 title = {
                     TextField(
                         value = query,
-                        onValueChange = viewModel::onQueryChange,
+                        onValueChange = onQueryChange,
                         placeholder = { Text("搜尋新聞") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(onSearch = {
                             keyboard?.hide()
-                            viewModel.search()
+                            onSearch()
                         }),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -79,7 +109,7 @@ fun SearchScreen(
     ) { innerPadding ->
         ArticlesContent(
             state = state,
-            onRetry = viewModel::search,
+            onRetry = onSearch,
             onArticleClick = onArticleClick,
             favoriteUrls = favoriteUrls,
             onToggleFavorite = onToggleFavorite,
@@ -87,4 +117,38 @@ fun SearchScreen(
             modifier = Modifier.padding(innerPadding),
         )
     }
+}
+
+@Composable
+private fun SearchPreview(query: String, state: IArticlesUiState) {
+    NewsTheme {
+        SearchContent(
+            query = query,
+            state = state,
+            onQueryChange = {},
+            onSearch = {},
+            favoriteUrls = setOf(previewArticles[0].url),
+            onToggleFavorite = {},
+            onBack = {},
+            onArticleClick = {},
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun SearchResultsPreview() {
+    SearchPreview(query = "台積電", state = IArticlesUiState.Success(previewArticles))
+}
+
+@Preview
+@Composable
+private fun SearchIdlePreview() {
+    SearchPreview(query = "", state = IArticlesUiState.Idle)
+}
+
+@Preview
+@Composable
+private fun SearchEmptyPreview() {
+    SearchPreview(query = "asdfgh", state = IArticlesUiState.Empty)
 }

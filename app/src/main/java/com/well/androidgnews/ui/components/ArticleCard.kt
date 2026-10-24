@@ -23,9 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.well.androidgnews.data.model.Article
+import com.well.androidgnews.ui.theme.NewsTheme
 import com.well.androidgnews.util.formatRelativeTime
 
 @Composable
@@ -79,5 +82,21 @@ fun ArticleCard(
                 )
             }
         }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ArticleCardFavoritePreview() {
+    NewsTheme {
+        ArticleCard(article = previewArticles[0], onClick = {}, isFavorite = true, onToggleFavorite = {})
+    }
+}
+
+@Preview
+@Composable
+private fun ArticleCardLongTitlePreview() {
+    NewsTheme {
+        ArticleCard(article = previewArticles[1], onClick = {}, isFavorite = false, onToggleFavorite = {})
     }
 }

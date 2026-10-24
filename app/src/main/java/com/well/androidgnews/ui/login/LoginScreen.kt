@@ -16,8 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.well.androidgnews.ui.theme.NewsTheme
 
 @Composable
 fun LoginScreen(
@@ -27,6 +30,18 @@ fun LoginScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    LoginContent(
+        state = state,
+        onSignIn = { viewModel.signIn { requestGoogleIdToken(context, googleWebClientId) } },
+    )
+}
+
+/** The login screen drawn from state alone, so previews can show it without a ViewModel. */
+@Composable
+private fun LoginContent(
+    state: ILoginUiState,
+    onSignIn: () -> Unit,
+) {
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -46,10 +61,7 @@ fun LoginScreen(
             if (state == ILoginUiState.SigningIn) {
                 CircularProgressIndicator()
             } else {
-                Button(
-                    onClick = { viewModel.signIn { requestGoogleIdToken(context, googleWebClientId) } },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
+                Button(onClick = onSignIn, modifier = Modifier.fillMaxWidth()) {
                     Text("使用 Google 帳號登入")
                 }
             }
@@ -58,4 +70,22 @@ fun LoginScreen(
             }
         }
     }
+}
+
+@PreviewLightDark
+@Composable
+private fun LoginIdlePreview() {
+    NewsTheme { LoginContent(state = ILoginUiState.Idle, onSignIn = {}) }
+}
+
+@Preview
+@Composable
+private fun LoginSigningInPreview() {
+    NewsTheme { LoginContent(state = ILoginUiState.SigningIn, onSignIn = {}) }
+}
+
+@Preview
+@Composable
+private fun LoginErrorPreview() {
+    NewsTheme { LoginContent(state = ILoginUiState.Error("登入失敗，請檢查網路後再試"), onSignIn = {}) }
 }
