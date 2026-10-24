@@ -46,6 +46,27 @@ Paths and app ID are read from `local.properties` / `app/build.gradle.kts`; over
 `ANDROID_HOME`, `JAVA_HOME`, `AVD`, `EMULATOR_ARGS`, `BOOT_TIMEOUT`. The emulator cold boots by
 default, since a quick-boot snapshot left by a killed emulator can hang at "offline".
 
+## Build an APK
+
+```bash
+scripts/build-apk-windows.sh            # Windows (Git Bash); macOS: scripts/build-apk-mac.sh
+scripts/build-apk-windows.sh --test     # run the unit tests first
+scripts/build-apk-windows.sh --release  # release build, signed with the key below
+```
+
+The APK lands in `dist/AndroidGNews-<versionName>-<debug|release>.apk` (git-ignored). The script
+prints the signing certificate's SHA-1/SHA-256 and warns if that SHA-1 isn't registered in
+`app/google-services.json`, since Google sign-in fails without it.
+
+Debug APKs are signed with the machine's debug key. Release APKs need a signing key of your own:
+
+```bash
+keytool -genkeypair -v -keystore androidgnews-upload.jks -alias upload   -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Keep the `.jks` and its passwords outside the repo (it's public) and backed up, point
+`local.properties` at it (keys below), and register its SHA-1 in Firebase.
+
 ## local.properties
 
 Not committed; each machine keeps its own.
@@ -53,6 +74,10 @@ Not committed; each machine keeps its own.
 | Key | Used by | Default |
 |---|---|---|
 | `GNEWS_API_KEY` | debug and release | none: **release builds fail without it** |
+| `RELEASE_STORE_FILE` | release | none: path to the signing keystore (`.jks`) |
+| `RELEASE_STORE_PASSWORD` | release | none |
+| `RELEASE_KEY_ALIAS` | release | none |
+| `RELEASE_KEY_PASSWORD` | release | none |
 
 ## Tests
 

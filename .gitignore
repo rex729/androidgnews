@@ -13,3 +13,4 @@ build_log.txt
 emulator.log
 # Firebase config for your own project (see README)
 app/google-services.json
+dist/
