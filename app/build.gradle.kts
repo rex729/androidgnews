@@ -35,19 +35,27 @@ android {
 
     // Release signing key, from local.properties (never in git; the repo is public). Use the Play
     // upload key here; Google Play re-signs with its own app signing key.
+    val releaseStoreFile = localProperties.getProperty("RELEASE_STORE_FILE")
     signingConfigs {
-        create("release") {
-            localProperties.getProperty("RELEASE_STORE_FILE")?.let { storeFile = file(it) }
-            storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD")
-            keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS")
-            keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD")
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD")
+                keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS")
+                keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD")
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
+            // Until there's a real release key, sign with the debug key so the optimized APK still
+            // installs and Google sign-in works (the debug SHA-1 is registered in Firebase). Not
+            // for Play uploads.
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            // R8: drop unused code and resources, shorten names.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -77,11 +85,6 @@ tasks.matching { it.name == "preReleaseBuild" }.configureEach {
     doFirst {
         check(!localProperties.getProperty("GNEWS_API_KEY").isNullOrBlank()) {
             "Set GNEWS_API_KEY in local.properties before building release."
-        }
-        val missing = listOf("RELEASE_STORE_FILE", "RELEASE_STORE_PASSWORD", "RELEASE_KEY_ALIAS", "RELEASE_KEY_PASSWORD")
-            .filter { localProperties.getProperty(it).isNullOrBlank() }
-        check(missing.isEmpty()) {
-            "Release signing isn't set up; add to local.properties: ${missing.joinToString()}"
         }
     }
 }

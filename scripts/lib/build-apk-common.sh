@@ -5,8 +5,9 @@
 # app/google-services.json; if it isn't, Google sign-in fails with "[16] Account reauth failed".
 #
 # Options:
-#   --release   release build, signed with the key configured in local.properties:
-#                 RELEASE_STORE_FILE, RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD
+#   --release   R8-optimized release build, signed with the key in local.properties
+#                 (RELEASE_STORE_FILE, RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD)
+#               or, until one is set up, with this machine's debug key
 #               (default: debug build, signed with this machine's debug key)
 #   --test      run the unit tests first and stop if any fail
 
@@ -29,7 +30,8 @@ version="$(sed -nE 's/^[[:space:]]*versionName[[:space:]]*=[[:space:]]*"([^"]+)"
 [ -n "$version" ] || die "couldn't read versionName from $gradle_file"
 
 if [ "$build_type" = release ] && [ -z "$(local_prop RELEASE_STORE_FILE)" ]; then
-  die "release signing isn't set up: add RELEASE_STORE_FILE, RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS and RELEASE_KEY_PASSWORD to local.properties (see README)"
+  echo "note: no release key in local.properties, so this release APK is signed with the debug key." >&2
+  echo "      Fine for testing; Google Play needs your own key (see README)." >&2
 fi
 
 # --- Build ---------------------------------------------------------------------

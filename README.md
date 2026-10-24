@@ -58,7 +58,9 @@ The APK lands in `dist/AndroidGNews-<versionName>-<debug|release>.apk` (git-igno
 prints the signing certificate's SHA-1/SHA-256 and warns if that SHA-1 isn't registered in
 `app/google-services.json`, since Google sign-in fails without it.
 
-Debug APKs are signed with the machine's debug key. Release APKs need a signing key of your own:
+Release APKs are optimized with R8 (unused code and resources removed, names shortened). Until a
+release key is configured they're signed with the machine's debug key, which is fine for installing
+and testing but not for Google Play. For Play, create a key of your own:
 
 ```bash
 keytool -genkeypair -v -keystore androidgnews-upload.jks -alias upload   -keyalg RSA -keysize 2048 -validity 10000
