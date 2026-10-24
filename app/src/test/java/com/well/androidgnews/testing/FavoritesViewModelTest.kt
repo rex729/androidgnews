@@ -1,5 +1,6 @@
 package com.well.androidgnews.testing
 
+import com.well.androidgnews.data.FakeAnalytics
 import com.well.androidgnews.data.FakeAuthRepository
 import com.well.androidgnews.data.FakeFavoritesRepository
 import com.well.androidgnews.data.article
@@ -21,8 +22,9 @@ class FavoritesViewModelTest {
     private val bob = FakeAuthRepository.user("bob")
     private val auth = FakeAuthRepository(initialUser = alice)
     private val repository = FakeFavoritesRepository()
+    private val analytics = FakeAnalytics()
 
-    private fun viewModel() = FavoritesViewModel(auth, repository)
+    private fun viewModel() = FavoritesViewModel(auth, repository, analytics)
 
     @Test
     fun `toggling an article saves it, toggling again removes it`() {
@@ -39,6 +41,7 @@ class FavoritesViewModelTest {
 
         assertTrue(viewModel.favorites.value.isEmpty())
         assertTrue(repository.favoritesOf("alice").isEmpty())
+        assertEquals(listOf("favorite_add:${story.url}", "favorite_remove:${story.url}"), analytics.events)
     }
 
     @Test
@@ -84,6 +87,7 @@ class FavoritesViewModelTest {
 
         assertEquals("收藏失敗，請再試一次", viewModel.errors.first())
         assertTrue(viewModel.favorites.value.isEmpty())
+        assertTrue("failed saves aren't reported as favorites", analytics.events.isEmpty())
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.well.androidgnews.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.well.androidgnews.analytics.IAnalytics
 import com.well.androidgnews.data.auth.IAuthRepository
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,7 @@ sealed interface ILoginUiState {
 
 class LoginViewModel(
     private val auth: IAuthRepository,
+    private val analytics: IAnalytics,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<ILoginUiState>(ILoginUiState.Idle)
@@ -36,6 +38,7 @@ class LoginViewModel(
                 is IGoogleSignInResult.Failure -> ILoginUiState.Error(picked.message)
                 is IGoogleSignInResult.Success -> try {
                     auth.signInWithGoogle(picked.idToken)
+                    analytics.signedIn()
                     ILoginUiState.Idle
                 } catch (e: CancellationException) {
                     throw e

@@ -1,5 +1,6 @@
 package com.well.androidgnews.testing
 
+import com.well.androidgnews.data.FakeAnalytics
 import com.well.androidgnews.data.FakeAuthRepository
 import com.well.androidgnews.rule.MainDispatcherRule
 import com.well.androidgnews.ui.login.IGoogleSignInResult
@@ -20,7 +21,8 @@ class LoginViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val auth = FakeAuthRepository()
-    private val viewModel = LoginViewModel(auth)
+    private val analytics = FakeAnalytics()
+    private val viewModel = LoginViewModel(auth, analytics)
 
     @Test
     fun `picking an account signs in with its token`() {
@@ -29,6 +31,7 @@ class LoginViewModelTest {
         assertEquals(listOf("token-1"), auth.signInTokens)
         assertEquals("uid-token-1", auth.currentUser.value?.id)
         assertEquals(ILoginUiState.Idle, viewModel.state.value)
+        assertEquals(listOf("login"), analytics.events)
     }
 
     @Test
@@ -55,6 +58,7 @@ class LoginViewModelTest {
 
         assertTrue(viewModel.state.value is ILoginUiState.Error)
         assertNull(auth.currentUser.value)
+        assertTrue(analytics.events.isEmpty())
     }
 
     @Test
@@ -74,11 +78,12 @@ class LoginViewModelTest {
 
     @Test
     fun `signing out clears the session`() {
-        val session = SessionViewModel(auth)
+        val session = SessionViewModel(auth, analytics)
         viewModel.signIn { IGoogleSignInResult.Success("token-1") }
 
         session.signOut()
 
         assertNull(session.currentUser.value)
+        assertEquals(listOf("login", "logout"), analytics.events)
     }
 }

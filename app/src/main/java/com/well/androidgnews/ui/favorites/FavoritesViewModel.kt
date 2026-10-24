@@ -2,6 +2,7 @@ package com.well.androidgnews.ui.favorites
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.well.androidgnews.analytics.IAnalytics
 import com.well.androidgnews.data.auth.IAuthRepository
 import com.well.androidgnews.data.favorites.IFavoritesRepository
 import com.well.androidgnews.data.model.Article
@@ -27,6 +28,7 @@ import kotlinx.coroutines.launch
 class FavoritesViewModel(
     private val auth: IAuthRepository,
     private val favoritesRepository: IFavoritesRepository,
+    private val analytics: IAnalytics,
 ) : ViewModel() {
 
     private val _errors = Channel<String>(Channel.BUFFERED)
@@ -58,8 +60,10 @@ class FavoritesViewModel(
             try {
                 if (isFavorite) {
                     favoritesRepository.remove(userId, article.url)
+                    analytics.favoriteRemoved(article)
                 } else {
                     favoritesRepository.add(userId, article)
+                    analytics.favoriteAdded(article)
                 }
             } catch (e: CancellationException) {
                 throw e

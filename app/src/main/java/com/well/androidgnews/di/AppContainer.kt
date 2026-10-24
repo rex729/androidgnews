@@ -1,6 +1,11 @@
 package com.well.androidgnews.di
 
+import android.content.Context
 import android.util.Log
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.well.androidgnews.analytics.FirebaseAnalyticsTracker
+import com.well.androidgnews.analytics.IAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.well.androidgnews.BuildConfig
@@ -20,10 +25,10 @@ import okhttp3.logging.HttpLoggingInterceptor
 /**
  * Builds the app's shared objects by hand, in dependency order:
  * OkHttpClient → INewsApiService (Retrofit) → INewsRepository, plus Firebase Auth and Firestore
- * for sign-in and favorites.
+ * for sign-in and favorites, and Firebase Analytics + Crashlytics.
  * One instance lives in [com.well.androidgnews.NewsApplication].
  */
-class AppContainer(apiKey: String) {
+class AppContainer(context: Context, apiKey: String) {
 
     private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(ApiKeyInterceptor(apiKey))
@@ -49,6 +54,10 @@ class AppContainer(apiKey: String) {
 
     val favoritesRepository: IFavoritesRepository by lazy {
         FirestoreFavoritesRepository(FirebaseFirestore.getInstance())
+    }
+
+    val analytics: IAnalytics by lazy {
+        FirebaseAnalyticsTracker(FirebaseAnalytics.getInstance(context), FirebaseCrashlytics.getInstance())
     }
 
     private companion object {

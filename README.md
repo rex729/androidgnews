@@ -14,6 +14,19 @@ device. Trade-offs of this branch:
 Reading news requires signing in with Google; signed-in users can save articles to favorites,
 stored in Cloud Firestore under their account so they follow them across devices.
 
+## Analytics and crash reports
+
+Google Analytics for Firebase records screen views (`screen_view` per screen, since all screens
+share one Activity), `search` (with the search term), `select_content` when an article is opened,
+`favorite_add` / `favorite_remove`, `login` and `logout`. Firebase Crashlytics reports crashes from
+**release builds only** and uploads the R8 mapping file during `assembleRelease`, so crash stacks
+show original names and line numbers. Both carry the signed-in user's Firebase uid (pseudonymous,
+not the email). Events go through the `IAnalytics` interface; tests use a fake.
+
+To watch events live: `adb shell setprop debug.firebase.analytics.app com.well.androidgnews`, then
+Firebase Console → Analytics → DebugView. If this ships on Google Play, declare analytics and
+crash data in the Data safety form.
+
 ## Setup
 
 1. Put your GNews key in `local.properties`: `GNEWS_API_KEY=...` (release builds refuse to build

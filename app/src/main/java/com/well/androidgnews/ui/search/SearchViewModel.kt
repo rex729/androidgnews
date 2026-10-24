@@ -2,6 +2,7 @@ package com.well.androidgnews.ui.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.well.androidgnews.analytics.IAnalytics
 import com.well.androidgnews.data.INewsRepository
 import com.well.androidgnews.ui.common.IArticlesUiState
 import com.well.androidgnews.ui.common.loadArticles
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 
 class SearchViewModel(
     private val repository: INewsRepository,
+    private val analytics: IAnalytics,
 ) : ViewModel() {
 
     private val _query = MutableStateFlow("")
@@ -31,6 +33,7 @@ class SearchViewModel(
     fun search() {
         val query = _query.value.trim()
         if (query.isEmpty()) return
+        analytics.searched(query)
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             _state.value = IArticlesUiState.Loading

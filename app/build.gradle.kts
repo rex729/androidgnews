@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     // Reads app/google-services.json (from your Firebase project; not in git).
     alias(libs.plugins.google.services)
+    // Uploads R8 mapping files on release builds so crash reports show original names and lines.
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 val localProperties = Properties().apply {
@@ -116,6 +118,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)

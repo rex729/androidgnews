@@ -6,16 +6,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.well.androidgnews.data.auth.User
+import com.well.androidgnews.data.model.Article
 import com.well.androidgnews.di.AppContainer
 import com.well.androidgnews.ui.favorites.FavoritesScreen
 import com.well.androidgnews.ui.favorites.FavoritesViewModel
@@ -42,14 +45,19 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             NewsTheme {
-                val session = viewModel { SessionViewModel(container.authRepository) }
+                val analytics = container.analytics
+                val session = viewModel { SessionViewModel(container.authRepository, analytics) }
                 val user by session.currentUser.collectAsStateWithLifecycle()
+
+                // Attach (or clear) the pseudonymous uid on analytics events and crash reports.
+                LaunchedEffect(user?.id) { analytics.setUser(user?.id) }
 
                 // Reading news requires an account: signed out, the login screen is all there is.
                 val signedIn = user
                 if (signedIn == null) {
+                    LaunchedEffect(Unit) { analytics.screenViewed(Routes.LOGIN) }
                     LoginScreen(
-                        viewModel = viewModel { LoginViewModel(container.authRepository) },
+                        viewModel = viewModel { LoginViewModel(container.authRepository, analytics) },
                         googleWebClientId = googleWebClientId,
                     )
                 } else {
@@ -65,8 +73,25 @@ class MainActivity : ComponentActivity() {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
         val repository = container.newsRepository
+        val analytics = container.analytics
         // Activity-scoped so every screen shares one favorites list and its hearts stay in sync.
-        val favorites = viewModel { FavoritesViewModel(container.authRepository, container.favoritesRepository) }
+        val favorites = viewModel {
+            FavoritesViewModel(container.authRepository, container.favoritesRepository, analytics)
+        }
+        val openArticle: (Article) -> Unit = {
+            analytics.articleOpened(it)
+            context.openUrl(it.url)
+        }
+
+        // One screen_view per destination: Compose screens all live in this single Activity, so
+        // Analytics' automatic Activity-based screen tracking can't tell them apart.
+        DisposableEffect(navController) {
+            val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
+                destination.route?.let(analytics::screenViewed)
+            }
+            navController.addOnDestinationChangedListener(listener)
+            onDispose { navController.removeOnDestinationChangedListener(listener) }
+        }
         val favoriteUrls by favorites.favoriteUrls.collectAsStateWithLifecycle()
 
         LaunchedEffect(favorites) {
@@ -86,23 +111,23 @@ class MainActivity : ComponentActivity() {
                         onSignOut()
                         scope.launch { clearGoogleCredentialState(context) }
                     },
-                    onArticleClick = { context.openUrl(it.url) },
+                    onArticleClick = openArticle,
                 )
             }
             composable(Routes.SEARCH) {
                 SearchScreen(
-                    viewModel = viewModel { SearchViewModel(repository) },
+                    viewModel = viewModel { SearchViewModel(repository, analytics) },
                     favoriteUrls = favoriteUrls,
                     onToggleFavorite = favorites::toggle,
                     onBack = { navController.popBackStack() },
-                    onArticleClick = { context.openUrl(it.url) },
+                    onArticleClick = openArticle,
                 )
             }
             composable(Routes.FAVORITES) {
                 FavoritesScreen(
                     viewModel = favorites,
                     onBack = { navController.popBackStack() },
-                    onArticleClick = { context.openUrl(it.url) },
+                    onArticleClick = openArticle,
                 )
             }
         }
@@ -112,5 +137,6 @@ class MainActivity : ComponentActivity() {
         const val HEADLINES = "headlines"
         const val SEARCH = "search"
         const val FAVORITES = "favorites"
+        const val LOGIN = "login"
     }
 }

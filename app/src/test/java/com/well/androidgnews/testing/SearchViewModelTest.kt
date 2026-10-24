@@ -1,5 +1,6 @@
 package com.well.androidgnews.testing
 
+import com.well.androidgnews.data.FakeAnalytics
 import com.well.androidgnews.data.FakeNewsRepository
 import com.well.androidgnews.data.article
 import com.well.androidgnews.rule.MainDispatcherRule
@@ -17,7 +18,8 @@ class SearchViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val repository = FakeNewsRepository()
-    private val viewModel = SearchViewModel(repository)
+    private val analytics = FakeAnalytics()
+    private val viewModel = SearchViewModel(repository, analytics)
 
     @Test
     fun `starts idle without searching`() {
@@ -41,6 +43,7 @@ class SearchViewModelTest {
 
         assertTrue(repository.searchRequests.isEmpty())
         assertEquals(IArticlesUiState.Idle, viewModel.state.value)
+        assertTrue(analytics.events.isEmpty())
     }
 
     @Test
@@ -53,6 +56,7 @@ class SearchViewModelTest {
 
         assertEquals(listOf("台積電"), repository.searchRequests)
         assertEquals(IArticlesUiState.Success(articles), viewModel.state.value)
+        assertEquals(listOf("search:台積電"), analytics.events)
     }
 
     @Test
