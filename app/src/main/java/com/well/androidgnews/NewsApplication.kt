@@ -2,12 +2,12 @@ package com.well.androidgnews
 
 import android.app.Application
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.well.androidgnews.di.AppContainer
+import com.well.androidgnews.di.AppDependencies
 
 class NewsApplication : Application() {
 
-    val container: AppContainer by lazy {
-        AppContainer(this, BuildConfig.GNEWS_API_KEY)
+    val dependencies: AppDependencies by lazy {
+        AppDependencies(this, BuildConfig.GNEWS_API_KEY)
     }
 
     override fun onCreate() {

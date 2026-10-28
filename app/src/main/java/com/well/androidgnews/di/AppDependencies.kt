@@ -28,7 +28,7 @@ import okhttp3.logging.HttpLoggingInterceptor
  * for sign-in and favorites, and Firebase Analytics + Crashlytics.
  * One instance lives in [com.well.androidgnews.NewsApplication].
  */
-class AppContainer(context: Context, apiKey: String) {
+class AppDependencies(context: Context, apiKey: String) {
 
     private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(ApiKeyInterceptor(apiKey))
